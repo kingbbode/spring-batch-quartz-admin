@@ -1,5 +1,6 @@
-package com.kingbbode.job.domain;
+package com.kingbbode.scheduler.domain;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name="QRTZ_SIMPLE_TRIGGERS")
 public class QrtzSimpleTriggers  implements java.io.Serializable {
 

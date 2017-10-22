@@ -1,4 +1,4 @@
-package com.kingbbode.job.dto;
+package com.kingbbode.scheduler.dto;
 
 /*
  * Created By Kingbbode
@@ -11,6 +11,12 @@ package com.kingbbode.job.dto;
  */
 
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class JobUpdateRequest extends JobRequest {
+    private String triggerName;
     private String cronExpression;
 }

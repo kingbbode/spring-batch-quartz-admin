@@ -1,4 +1,4 @@
-package com.kingbbode.job.repository;
+package com.kingbbode.scheduler.repository;
 
 /*
  * Created By Kingbbode
@@ -11,12 +11,12 @@ package com.kingbbode.job.repository;
  */
 
 
-import com.kingbbode.job.domain.QrtzJobDetails;
-import com.kingbbode.job.domain.QrtzJobDetailsId;
+import com.kingbbode.scheduler.domain.QrtzJobDetails;
+import com.kingbbode.scheduler.domain.QrtzJobDetailsId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 public interface QuartzJobDetailsRepository extends JpaRepository<QrtzJobDetails, QrtzJobDetailsId> {
-    List<QrtzJobDetails> findByIdSchedName(String SchedulerName);
+    QrtzJobDetails findByIdSchedNameAndIdJobName(String SchedulerName, String jobName);
 }

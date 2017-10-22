@@ -1,4 +1,4 @@
-package com.kingbbode.job.service;
+package com.kingbbode.scheduler.dto;
 
 /*
  * Created By Kingbbode
@@ -11,8 +11,15 @@ package com.kingbbode.job.service;
  */
 
 
-import org.springframework.stereotype.Service;
+import lombok.Getter;
+import lombok.Setter;
 
-@Service
-public class ServerService {
+import java.util.Map;
+
+@Getter
+@Setter
+public class JobExecuteRequest extends JobRequest{
+    private int repeatCount;
+    private int repeatInterval;
+    private Map<String, String> parameters;
 }

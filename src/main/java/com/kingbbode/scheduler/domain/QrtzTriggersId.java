@@ -1,9 +1,6 @@
-package com.kingbbode.job.domain;
+package com.kingbbode.scheduler.domain;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -14,6 +11,7 @@ import javax.persistence.Embeddable;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Embeddable
 public class QrtzTriggersId  implements java.io.Serializable {

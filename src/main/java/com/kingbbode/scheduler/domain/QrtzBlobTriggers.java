@@ -1,4 +1,4 @@
-package com.kingbbode.job.domain;
+package com.kingbbode.scheduler.domain;
 
 import lombok.Getter;
 import lombok.Setter;

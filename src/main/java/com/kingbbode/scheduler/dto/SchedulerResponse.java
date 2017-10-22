@@ -1,4 +1,4 @@
-package com.kingbbode.job.dto;
+package com.kingbbode.scheduler.dto;
 
 /*
  * Created By Kingbbode
@@ -11,11 +11,17 @@ package com.kingbbode.job.dto;
  */
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Getter
-@Setter
-public class ServerRequest {
-    private String serverName;
+public class SchedulerResponse {
+    private String name;
+    private String version;
+    private String jobName;
 }

@@ -1,7 +1,6 @@
-package com.kingbbode.job.domain;
+package com.kingbbode.scheduler.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -11,6 +10,9 @@ import javax.persistence.Embeddable;
  */
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Embeddable
 public class QrtzJobDetailsId  implements java.io.Serializable {
 
@@ -22,6 +24,7 @@ public class QrtzJobDetailsId  implements java.io.Serializable {
 
     @Column(name="JOB_GROUP", nullable=false, length=200)
     private String jobGroup;
+
 }
 
 

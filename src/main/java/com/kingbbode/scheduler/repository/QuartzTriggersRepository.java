@@ -1,4 +1,4 @@
-package com.kingbbode.job.repository;
+package com.kingbbode.scheduler.repository;
 
 /*
  * Created By Kingbbode
@@ -11,9 +11,12 @@ package com.kingbbode.job.repository;
  */
 
 
-import com.kingbbode.job.domain.QrtzTriggers;
-import com.kingbbode.job.domain.QrtzTriggersId;
+import com.kingbbode.scheduler.domain.QrtzTriggers;
+import com.kingbbode.scheduler.domain.QrtzTriggersId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface QuartzTriggersRepository extends JpaRepository<QrtzTriggers, QrtzTriggersId> {
+    Optional<QrtzTriggers> findByIdSchedNameAndIdTriggerNameAndJobNameAndTriggerType(String schedName, String triggerName, String jobName, String type);
 }
