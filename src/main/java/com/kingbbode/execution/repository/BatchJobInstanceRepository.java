@@ -12,10 +12,10 @@ package com.kingbbode.execution.repository;
 
 
 import com.kingbbode.execution.domain.BatchJobInstance;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.Repository;
 
-import java.util.List;
+import java.util.stream.Stream;
 
-public interface BatchJobInstanceRepository extends JpaRepository<BatchJobInstance, Long> {
-    List<BatchJobInstance> findByJobName(String jobName);
+public interface BatchJobInstanceRepository extends Repository<BatchJobInstance, Long> {
+    Stream<BatchJobInstance> findByJobNameOrderByJobInstanceIdDesc(String jobName);
 }

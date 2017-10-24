@@ -13,10 +13,13 @@ package com.kingbbode.scheduler.repository;
 
 import com.kingbbode.scheduler.domain.QrtzJobDetails;
 import com.kingbbode.scheduler.domain.QrtzJobDetailsId;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.Repository;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-public interface QuartzJobDetailsRepository extends JpaRepository<QrtzJobDetails, QrtzJobDetailsId> {
-    QrtzJobDetails findByIdSchedNameAndIdJobName(String SchedulerName, String jobName);
+public interface QuartzJobDetailsRepository extends Repository<QrtzJobDetails, QrtzJobDetailsId> {
+    Optional<QrtzJobDetails> findByIdSchedNameAndIdJobName(String SchedulerName, String jobName);
+
+    Stream<QrtzJobDetails> findAll();
 }

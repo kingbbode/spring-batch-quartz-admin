@@ -10,6 +10,7 @@ package com.kingbbode.scheduler.service;
  * kingbbode                2017-10-20
  */
 
+import com.kingbbode.application.exceptions.NotFoundException;
 import com.kingbbode.scheduler.domain.QrtzJobDetails;
 import com.kingbbode.scheduler.domain.QrtzSimpleTriggersHistory;
 import com.kingbbode.scheduler.domain.QrtzTriggers;
@@ -18,20 +19,20 @@ import com.kingbbode.scheduler.dto.*;
 import com.kingbbode.scheduler.repository.QuartzJobDetailsRepository;
 import com.kingbbode.scheduler.repository.QuartzTriggersHistoryRepository;
 import com.kingbbode.scheduler.repository.QuartzTriggersRepository;
-import netscape.security.ForbiddenTargetException;
+import com.kingbbode.scheduler.utils.JobDataMapConverter;
+import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class SchedulerService {
-
+    
     @Autowired
     private QuartzJobDetailsRepository quartzJobDetailsRepository;
 
@@ -43,65 +44,66 @@ public class SchedulerService {
 
     public List<SchedulerResponse> getSchedulerList() {
         return this.quartzJobDetailsRepository.findAll()
-                .stream()
                 .map(QrtzJobDetails::toSchedulerResponse)
                 .collect(Collectors.toList());
     }
 
-    public SchedulerDetailResponse getSchedulerDetail(JobRequest jobRequest) {
-        SchedulerDetailResponse schedulerDetailResponse =
-                this.quartzJobDetailsRepository.findByIdSchedNameAndIdJobName(jobRequest.getSchedulerName(), jobRequest.getJobName())
-                    .toSchedulerDetailResponse();
+    public SchedulerResponse getSchedulerDetail(JobRequest jobRequest) {
+        QrtzJobDetails jobDetails =  this.quartzJobDetailsRepository.findByIdSchedNameAndIdJobName(
+                jobRequest.getMergedSchedulerName(), jobRequest.getMergedJobName()
+        ).orElseThrow(NotFoundException::new);
+        SchedulerResponse schedulerDetailResponse = jobDetails.toSchedulerDetailResponse();
         schedulerDetailResponse.setSimpleTriggerList(
-                this.quartzTriggersHistoryRepository.findBySchedNameAndJobName(jobRequest.getSchedulerName(), jobRequest.getJobName())
-                    .stream()
-                    .map(QrtzSimpleTriggersHistory::toSimpleTrigger)
-                    .collect(Collectors.toList())
-        );
+                this.quartzTriggersHistoryRepository.findBySchedNameAndJobName(jobRequest.getMergedSchedulerName(), jobRequest.getMergedJobName())
+                        .map(QrtzSimpleTriggersHistory::toSimpleTrigger)
+                        .collect(Collectors.toList()));
         return schedulerDetailResponse;
     }
 
-    public void updateTrigger(JobUpdateRequest jobUpdateRequest) {
-        Optional<QrtzTriggers> qrtzTriggers = this.quartzTriggersRepository.findByIdSchedNameAndIdTriggerNameAndJobNameAndTriggerType(jobUpdateRequest.getSchedulerName(), jobUpdateRequest.getTriggerName(), jobUpdateRequest.getJobName(), "CRON");
-        if(!qrtzTriggers.isPresent()) {
-            throw new ForbiddenTargetException("not found trigger.");
-        }
-        qrtzTriggers.get().getQrtzCronTriggers().updateCron(jobUpdateRequest.getCronExpression());
+    public void updateTrigger(JobTriggerRequest jobTriggerRequest, JobTriggerInfo jobTriggerInfo) {
+        QrtzTriggers qrtzTriggers = this.quartzTriggersRepository.findByIdSchedNameAndIdTriggerNameAndJobNameAndTriggerType(
+                jobTriggerRequest.getMergedSchedulerName(), 
+                jobTriggerRequest.getTriggerName(), 
+                jobTriggerRequest.getMergedJobName(), 
+                "CRON").orElseThrow(NotFoundException::new);
+        qrtzTriggers.getQrtzCronTriggers().updateCron(jobTriggerInfo.getCronExpression());
     }
 
-    public void executeJob(JobExecuteRequest jobExecuteRequest) {
+    public void executeJob(JobRequest jobRequest, JobExecuteInfo jobExecuteRequest) {
         LocalDateTime now = LocalDateTime.now();
-        saveTrigger(jobExecuteRequest, now);
-        saveHistory(jobExecuteRequest, now);
+        JobDataMap jobDataMap = JobDataMapConverter.convertMapToForceJobData(jobExecuteRequest.getParameters());
+        saveTrigger(jobRequest, jobExecuteRequest, now, jobDataMap);
+        saveHistory(jobRequest, jobExecuteRequest, now, jobDataMap);
     }
-
-    private void saveHistory(JobExecuteRequest jobExecuteRequest, LocalDateTime now) {
+    
+    private void saveHistory(JobRequest jobRequest, JobExecuteInfo jobExecuteRequest, LocalDateTime now, JobDataMap jobDataMap) {
         QrtzSimpleTriggersHistory history = QrtzSimpleTriggersHistory.builder()
-                .schedName(jobExecuteRequest.getSchedulerName())
-                .jobName(jobExecuteRequest.getJobName())
+                .schedName(jobRequest.getMergedSchedulerName())
+                .jobName(jobRequest.getMergedJobName())
                 .triggerName("OneTimeTrigger-" + now.toString())
                 .repeat(jobExecuteRequest.getRepeatCount())
                 .repeatInterval(jobExecuteRequest.getRepeatInterval())
                 .executor("admin")
                 .executeDateTime(now)
+                .jobDataMap(jobDataMap)
                 .build();
         this.quartzTriggersHistoryRepository.save(history);
     }
 
-    private void saveTrigger(JobExecuteRequest jobExecuteRequest, LocalDateTime now) {
+    private void saveTrigger(JobRequest jobRequest, JobExecuteInfo jobExecuteRequest, LocalDateTime now, JobDataMap jobDataMap) {
         QrtzTriggersId qrtzTriggersId = QrtzTriggersId.builder()
-                .schedName(jobExecuteRequest.getSchedulerName())
+                .schedName(jobRequest.getMergedSchedulerName())
                 .triggerName("OneTimeTrigger-" + now.toString())
                 .triggerGroup("OneTimeTrigger")
                 .build();
 
         QrtzTriggers qrtzTriggers = new QrtzTriggers.SimpleTriggerBuilder()
                 .id(qrtzTriggersId)
-                .jobName(jobExecuteRequest.getJobName())
+                .jobName(jobRequest.getMergedJobName())
                 .jobGroup("DEFAULT")
                 .repeatCount(jobExecuteRequest.getRepeatCount())
                 .repeatInterval(jobExecuteRequest.getRepeatInterval())
-                .param(jobExecuteRequest.getParameters())
+                .param(jobDataMap)
                 .startTime(now)
                 .build();
 

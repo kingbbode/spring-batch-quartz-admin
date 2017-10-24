@@ -1,5 +1,6 @@
 package com.kingbbode.execution.domain;
 
+import com.kingbbode.execution.dto.StepExecutionResponse;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,10 @@ public class BatchStepExecution  implements java.io.Serializable {
     @Id
     @Column(name="STEP_EXECUTION_ID", unique=true, nullable=false)
     private long stepExecutionId;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="JOB_EXECUTION_ID", nullable=false, insertable=false, updatable=false)
+    private BatchJobExecution batchJobExecution;
 
     @Version
     @Column(name="VERSION", nullable=false)
@@ -71,6 +76,23 @@ public class BatchStepExecution  implements java.io.Serializable {
     @Column(name="LAST_UPDATED", length=19)
     private Date lastUpdated;
 
+    public StepExecutionResponse toStepExecutionDto() {
+        return StepExecutionResponse.builder()
+                .id(this.stepExecutionId)
+                .name(this.stepName)
+                .createTIme(this.startTime.getTime())
+                .endTime(this.endTime.getTime())
+                .status(this.status)
+                .commitCount(this.commitCount)
+                .readCount(this.readCount)
+                .filterCount(this.filterCount)
+                .writeCount(this.writeCount)
+                .readSkipCount(this.readSkipCount)
+                .writeSkipCount(this.writeSkipCount)
+                .processSkipCount(this.processSkipCount)
+                .rollbackCount(this.rollbackCount)
+                .build();
+    }
 }
 
 

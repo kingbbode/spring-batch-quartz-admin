@@ -1,13 +1,12 @@
 package com.kingbbode.scheduler.domain;
 
-import com.kingbbode.scheduler.dto.SchedulerDetailResponse;
 import com.kingbbode.scheduler.dto.SchedulerResponse;
+import com.kingbbode.scheduler.utils.JobDataMapConverter;
 import lombok.Getter;
 import lombok.Setter;
 import org.quartz.JobDataMap;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,13 +18,12 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name="QRTZ_JOB_DETAILS")
 public class QrtzJobDetails  implements java.io.Serializable {
-
+    
     @EmbeddedId
     private QrtzJobDetailsId id;
 
     @Column(name="DESCRIPTION", length=250)
     private String description;
-
 
     @Column(name="JOB_CLASS_NAME", nullable=false, length=250)
     private String jobClassName;
@@ -45,27 +43,38 @@ public class QrtzJobDetails  implements java.io.Serializable {
     @Column(name="JOB_DATA")
     private JobDataMap jobData;
 
-    @OneToMany(fetch=FetchType.LAZY, mappedBy="qrtzJobDetails")
-    private Set<QrtzTriggers> qrtzTriggerses = new HashSet<>();
+    @OneToMany
+    @JoinColumns( {
+            @JoinColumn(name="SCHED_NAME", referencedColumnName="SCHED_NAME", nullable=false, insertable=false, updatable=false),
+            @JoinColumn(name="JOB_NAME", referencedColumnName="JOB_NAME", nullable=false, insertable=false, updatable=false),
+            @JoinColumn(name="JOB_GROUP", referencedColumnName="JOB_GROUP", nullable=false, insertable=false, updatable=false) } )
+    private Set<QrtzTriggers> qrtzTriggerses;
 
     public SchedulerResponse toSchedulerResponse() {
-        String[] name = this.id.getSchedName().split("-");
+        String[] SchedulerName = this.id.getSchedName().split("_");
+        String[] jobName = this.id.getJobName().split("_");
         return SchedulerResponse.builder()
-                .name(name[0])
-                .version(name.length < 2 ? "undefined" : name[1])
-                .jobName(this.id.getJobName())
+                .name(SchedulerName[0])
+                .version(SchedulerName.length < 2 ? "undefined" : SchedulerName[1])
+                .jobName(jobName[jobName.length-1])
                 .build();
     }
-
-    public SchedulerDetailResponse toSchedulerDetailResponse() {
-        return SchedulerDetailResponse.builder()
-                .jobName(this.id.getJobName())
+    
+    @SuppressWarnings("unchecked")
+    public SchedulerResponse toSchedulerDetailResponse() {
+        String[] SchedulerName = this.id.getSchedName().split("_");
+        String[] jobName = this.id.getJobName().split("_");
+        return SchedulerResponse.builder()
+                .name(SchedulerName[0])
+                .version(SchedulerName.length < 2 ? "undefined" : SchedulerName[1])
+                .jobName(jobName[jobName.length-1])
                 .cronTriggerList(
                         qrtzTriggerses.stream().filter(QrtzTriggers::isCronType)
                             .map(QrtzTriggers::getQrtzCronTriggers)
                             .map(QrtzCronTriggers::toCronTriggerResponse)
                             .collect(Collectors.toList())
                         )
+                .params(JobDataMapConverter.convertJobDataToDefaultMap(this.jobData))
                 .build();
     }
 }

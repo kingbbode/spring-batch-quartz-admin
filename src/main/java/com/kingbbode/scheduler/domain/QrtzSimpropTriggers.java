@@ -3,7 +3,10 @@ package com.kingbbode.scheduler.domain;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 
 /**
@@ -17,10 +20,6 @@ public class QrtzSimpropTriggers  implements java.io.Serializable {
 
     @EmbeddedId
     private QrtzTriggersId id;
-
-    @OneToOne(fetch=FetchType.LAZY)
-    @PrimaryKeyJoinColumn
-    private QrtzTriggers qrtzTriggers;
 
     @Column(name="STR_PROP_1", length=512)
     private String strProp1;

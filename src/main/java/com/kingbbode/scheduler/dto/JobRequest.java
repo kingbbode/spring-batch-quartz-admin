@@ -18,5 +18,14 @@ import lombok.Setter;
 @Setter
 public class JobRequest {
     private String schedulerName;
+    private String version;
     private String jobName;
+
+    public String getMergedSchedulerName() {
+        return schedulerName + "_" + version;
+    }
+
+    public String getMergedJobName() {
+        return getMergedSchedulerName() + "_" + jobName;
+    }
 }

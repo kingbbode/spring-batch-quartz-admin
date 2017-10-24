@@ -11,9 +11,11 @@ package com.kingbbode.execution.controller;
  */
 
 import com.kingbbode.execution.dto.ExecutionDetailRequest;
-import com.kingbbode.execution.dto.ExecutionRequest;
-import com.kingbbode.execution.dto.JobExecutionDetailResponse;
 import com.kingbbode.execution.dto.JobExecutionResponse;
+import com.kingbbode.execution.dto.StepExecutionResponse;
+import com.kingbbode.execution.service.JobExecutionService;
+import com.kingbbode.scheduler.dto.JobRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,14 +23,21 @@ import java.util.List;
 
 @RestController
 public class JobController {
+    
+    private final JobExecutionService jobExecutionService;
 
-    @GetMapping("/job/{jobName}/executions")
-    public List<JobExecutionResponse> jobsExecutions(ExecutionRequest executionRequest) {
-        return null;
+    @Autowired
+    public JobController(JobExecutionService jobExecutionService) {
+        this.jobExecutionService = jobExecutionService;
     }
 
-    @GetMapping("/job/{jobName}/execution/{executionId}")
-    public List<JobExecutionDetailResponse> jobsExecutionsDetail(ExecutionDetailRequest executionDetailRequest) {
-        return null;
+    @GetMapping("/schedulers/{schedulerName}/versions/{version}/jobs/{jobName}/executions")
+    public List<JobExecutionResponse> jobsExecutions(JobRequest jobRequest) {
+        return jobExecutionService.getExecutionList(jobRequest);
+    }
+
+    @GetMapping("/schedulers/{schedulerName}/versions/{version}/jobs/{jobName}/executions/{executionId}/steps")
+    public List<StepExecutionResponse> jobsExecutionsDetail(ExecutionDetailRequest executionDetailRequest) {
+        return jobExecutionService.getStepExecutionList(executionDetailRequest);
     }
 }

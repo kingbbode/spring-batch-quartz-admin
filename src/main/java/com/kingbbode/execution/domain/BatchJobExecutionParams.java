@@ -25,6 +25,11 @@ public class BatchJobExecutionParams  implements java.io.Serializable {
     private BatchJobExecution batchJobExecution;
 
     @Transient
+    public String getKey() {
+        return this.id.keyName;
+    }
+    
+    @Transient
     public String getValue() {
         String value = findValue();
         return StringUtils.isEmpty(value) ? "" : value;

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -24,28 +25,32 @@ import java.util.List;
 @RestController
 public class SchedulerController {
 
+    private final SchedulerService schedulerService;
+
     @Autowired
-    private SchedulerService schedulerService;
+    public SchedulerController(SchedulerService schedulerService) {
+        this.schedulerService = schedulerService;
+    }
 
     @GetMapping("/schedulers")
     public List<SchedulerResponse> schedulers() {
         return schedulerService.getSchedulerList();
     }
 
-    @GetMapping("/scheduler/{schedulerName}/job/{jobName}")
-    public SchedulerDetailResponse schedulerDetail(JobRequest jobRequest) {
+    @GetMapping("/schedulers/{schedulerName}/versions/{version}/jobs/{jobName}")
+    public SchedulerResponse schedulerDetail(JobRequest jobRequest) {
         return schedulerService.getSchedulerDetail(jobRequest);
     }
     
-    @PostMapping("/scheduler/{schedulerName}/job/{jobName}/trigger/{triggerName}")
-    public ResponseEntity<String> alterJob(JobUpdateRequest jobUpdateRequest) {
-        schedulerService.updateTrigger(jobUpdateRequest);
+    @PostMapping("/schedulers/{schedulerName}/versions/{version}/jobs/{jobName}/triggers/{triggerName}")
+    public ResponseEntity<String> alterJob(JobTriggerRequest jobTriggerRequest, @RequestBody JobTriggerInfo jobTriggerInfo) {
+        schedulerService.updateTrigger(jobTriggerRequest, jobTriggerInfo);
         return ResponseEntity.ok("Success");
     }
     
-    @PostMapping("/scheduler/{schedulerName}/job/{jobName}/execute")
-    public ResponseEntity<String> execute(JobExecuteRequest jobExecuteRequest) {
-        schedulerService.executeJob(jobExecuteRequest);
+    @PostMapping("/schedulers/{schedulerName}/versions/{version}/jobs/{jobName}/execute")
+    public ResponseEntity<String> execute(JobRequest jobRequest, @RequestBody JobExecuteInfo jobExecuteInfo) {
+        schedulerService.executeJob(jobRequest, jobExecuteInfo);
         return ResponseEntity.ok("Success");
     }
 }

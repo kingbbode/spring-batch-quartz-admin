@@ -13,10 +13,12 @@ package com.kingbbode.scheduler.repository;
 
 import com.kingbbode.scheduler.domain.QrtzTriggers;
 import com.kingbbode.scheduler.domain.QrtzTriggersId;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.Repository;
 
 import java.util.Optional;
 
-public interface QuartzTriggersRepository extends JpaRepository<QrtzTriggers, QrtzTriggersId> {
+public interface QuartzTriggersRepository extends Repository<QrtzTriggers, QrtzTriggersId> {
     Optional<QrtzTriggers> findByIdSchedNameAndIdTriggerNameAndJobNameAndTriggerType(String schedName, String triggerName, String jobName, String type);
+
+    void save(QrtzTriggers qrtzTriggers);
 }

@@ -14,6 +14,8 @@ package com.kingbbode.execution.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Map;
+
 @Builder
 @Getter
 public class JobExecutionResponse {
@@ -21,4 +23,5 @@ public class JobExecutionResponse {
     private Long createTIme;
     private Long endTime;
     private String status;
+    private Map<String, String> parameters;
 }

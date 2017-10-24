@@ -11,18 +11,48 @@ package com.kingbbode.execution.service;
  */
 
 
-import com.kingbbode.execution.repository.BatchJobExecutionParamsRepository;
+import com.kingbbode.application.exceptions.NotFoundException;
+import com.kingbbode.execution.domain.BatchJobExecution;
+import com.kingbbode.execution.domain.BatchJobInstance;
+import com.kingbbode.execution.dto.ExecutionDetailRequest;
+import com.kingbbode.execution.dto.JobExecutionResponse;
+import com.kingbbode.execution.dto.StepExecutionResponse;
+import com.kingbbode.execution.repository.BatchJobExecutionRepository;
 import com.kingbbode.execution.repository.BatchJobInstanceRepository;
+import com.kingbbode.scheduler.dto.JobRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class JobExecutionService {
     
-    @Autowired
-    private BatchJobInstanceRepository batchJobInstanceRepository;
+    private final BatchJobInstanceRepository batchJobInstanceRepository;
     
+    private final BatchJobExecutionRepository batchJobExecutionRepository;
+
     @Autowired
-    private BatchJobExecutionParamsRepository batchJobExecutionParamsRepository;
+    public JobExecutionService(BatchJobInstanceRepository batchJobInstanceRepository, BatchJobExecutionRepository batchJobExecutionRepository) {
+        this.batchJobInstanceRepository = batchJobInstanceRepository;
+        this.batchJobExecutionRepository = batchJobExecutionRepository;
+    }
+
+    public List<JobExecutionResponse> getExecutionList(JobRequest jobRequest) {
+        return batchJobInstanceRepository.findByJobNameOrderByJobInstanceIdDesc(jobRequest.getMergedJobName())
+                .map(BatchJobInstance::getBatchJobExecutions)
+                .flatMap(Set::stream)
+                .map(BatchJobExecution::toJobExecutionInfo)
+                .collect(Collectors.toList());
+    }
+
     
+    public List<StepExecutionResponse> getStepExecutionList(ExecutionDetailRequest executionDetailRequest) {
+       BatchJobExecution batchJobExecution =  batchJobExecutionRepository.findOne(Long.valueOf(executionDetailRequest.getExecutionId()))
+               .orElseThrow(NotFoundException::new);
+        return batchJobExecution.toJobExecutionDetailResponse();
+        
+    }
 }

@@ -10,11 +10,12 @@ package com.kingbbode.execution.dto;
  * kingbbode                2017-10-20
  */
 
+import com.kingbbode.scheduler.dto.JobRequest;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ExecutionDetailRequest extends ExecutionRequest {
+public class ExecutionDetailRequest extends JobRequest {
     private String executionId;
 }

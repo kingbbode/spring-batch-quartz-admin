@@ -1,9 +1,9 @@
 package com.kingbbode.scheduler.domain;
 
-import com.kingbbode.scheduler.dto.SchedulerDetailResponse;
+import com.kingbbode.scheduler.dto.SchedulerResponse;
+import com.kingbbode.scheduler.utils.JobDataMapConverter;
 import lombok.*;
 import org.quartz.JobDataMap;
-import org.quartz.SimpleTrigger;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,11 +18,12 @@ import java.time.ZoneId;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name="QRTZ_TRIGGERS_HISTORY")
-public class QrtzSimpleTriggersHistory implements java.io.Serializable {
+@Table(name="QRTZ_SIMPLE_TRIGGERS_HISTORY")
+public class QrtzSimpleTriggersHistory {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "IDX")
     private Long idx;
 
     @Column(name="SCHED_NAME", nullable=false, length=120)
@@ -34,25 +35,30 @@ public class QrtzSimpleTriggersHistory implements java.io.Serializable {
     @Column(name="TRIGGER_NAME", nullable=false, length=200)
     private String triggerName;
 
-    @Column(name="REPEAT")
+    @Column(name="`REPEAT`")
     private int repeat;
 
-    @Column(name="INTERVAL")
+    @Column(name="`INTERVAL`")
     private int repeatInterval;
 
-    @Column(name="EXECUTOR", nullable=false, length=200)
+    @Column(name="EXECUTOR", nullable=false, length=50)
     private String executor;
 
     @Column(name="EXECUTE_DATE")
     private LocalDateTime executeDateTime;
+    
+    @Column(name = "JOB_DATA")
+    private JobDataMap jobDataMap;
 
-    public SchedulerDetailResponse.SimpleTrigger toSimpleTrigger() {
-        return SchedulerDetailResponse.SimpleTrigger.builder()
+    @SuppressWarnings("unchecked")
+    public SchedulerResponse.SimpleTrigger toSimpleTrigger() {
+        return SchedulerResponse.SimpleTrigger.builder()
                 .name(this.triggerName)
                 .repeat(this.repeat)
                 .repeatInterval(this.repeatInterval)
                 .executor(this.executor)
                 .executeTimeStamp(this.executeDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                .params(JobDataMapConverter.convertJobDataToForceMap(this.jobDataMap))
                 .build();
     }
 }
